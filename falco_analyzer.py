@@ -157,7 +157,7 @@ def get_csv_tags(input_falco_rules_file, output_csv_file):
 
     i=1
     filename=os.path.basename(input_falco_rules_file)
-    prefixes = ["PCI", "NIST", "mitre","SOC2"]
+    prefixes = ["PCI", "NIST_800-190", "NIST_800-53", "mitre","SOC2"]
     fields = prefixes + ["rule", "file", "position"]
     
     header = ""
