@@ -32,6 +32,10 @@ def merge_yamls(rule_file, tag_file, output_file):
 
     with open(rule_file, "r") as file:
         falco_doc = yaml.load(file)
+        
+        if (falco_doc is None):
+            print("** Error: YAML document empty")
+            exit()
 
         for item in falco_doc:
             if item.get("list") != None:
