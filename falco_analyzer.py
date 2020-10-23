@@ -209,7 +209,7 @@ def get_csv_tags_intro(arguments):
     exit()
 
 def main():
-    if len(sys.argv)<1:
+    if len(sys.argv)<=1:
         show_help()
     
     switcher = {
