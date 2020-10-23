@@ -58,7 +58,9 @@ def merge_yamls(rule_file, tag_file, output_file):
                 # Rule doesn't have a 'tags' key
                 stats['rules_notags']+=1
                 rules_no_tags_key.append(item.get("rule"))
-                continue
+                item["tags"]=[]
+                # We still will add tags to this rule
+            
             if item.get("rule") not in indexed_rules_tags.keys():
                 # Tags file doesn't have a rule with same name
                 rules_not_found.append(item.get("rule"))
@@ -157,7 +159,7 @@ def get_csv_tags(input_falco_rules_file, output_csv_file):
 
     i=1
     filename=os.path.basename(input_falco_rules_file)
-    prefixes = ["PCI", "NIST_800-190", "NIST_800-53", "mitre","SOC2"]
+    prefixes = ["source=", "PCI", "NIST_800-190", "NIST_800-53", "mitre","SOC2"]
     fields = prefixes + ["rule", "file", "position"]
     
     header = ""
