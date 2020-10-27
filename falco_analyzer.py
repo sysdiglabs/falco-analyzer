@@ -151,6 +151,12 @@ def get_tags_from_prefix(tags, prefix):
     result = result [len(separator): len(result)- len(separator)]
     return result
 
+def starts_with_any(tag, prefixes):
+    for prefix in prefixes:
+        if str.startswith(tag, prefix):
+             # and tag != prefix:
+            return True
+    return False
 
 def get_csv_tags(input_falco_rules_file, output_csv_file):
     
@@ -163,7 +169,7 @@ def get_csv_tags(input_falco_rules_file, output_csv_file):
 
     i=1
     filename=os.path.basename(input_falco_rules_file)
-    prefixes = ["source=", "PCI", "NIST_800-190", "NIST_800-53", "mitre","SOC2"]
+    prefixes = ["source=", "PCI", "NIST_800-190", "NIST_800-53", "mitre", "SOC2"]
     fields = prefixes + ["rule", "file", "position"]
     
     header = ""
@@ -187,6 +193,38 @@ def get_csv_tags(input_falco_rules_file, output_csv_file):
 
         stream.close()
 
+def get_rules_md(input_falco_rules_file, output_md_file):
+    rules = read_rules_from_file(input_falco_rules_file)
+
+    eol = "\n"
+    title_prefix=eol + "## "
+    desc_prefix=""
+    tags_prefix="Tags: "
+    avoid_tag_starts = ["PCI", "NIST_800-190", "NIST_800-53", "SOC2", "aws_cis", "pci_dss_"]
+    tag_separator=", "
+
+    with open(output_md_file, "w") as stream:
+        stream.write("# Rules" + eol) 
+        for item in rules:
+            line = ""
+            if not 'rule' in item:
+                continue
+            line += title_prefix + item['rule'] + eol
+            if 'desc' in item:
+                line += desc_prefix + item['desc'] + eol
+            if 'tags' in item:
+                tags_line=""
+                for tag in item['tags']:
+                    if not starts_with_any(tag, avoid_tag_starts):
+                        tags_line += tag_separator + tag 
+                if tags_line != "":
+                    tags_line = tags_line[len(tag_separator):]
+                    line += tags_prefix + tags_line + eol
+            stream.write(line)
+
+        stream.close()
+
+
 def show_help(arguments=[]):
     print("Usage:")
     print("python3 falco_analyzer.py [command] [parameters]")
@@ -201,6 +239,8 @@ def show_help(arguments=[]):
     print("     Merges tags to rules from input file, and outputs new rules to a new file.")
     print("  get_csv_tags [input_falco_rules_file] [output_csv_file]")
     print("     Writes a CSV file with a Falco rule per row, with different tags used on each one")
+    print("  get_rules_md [input_falco_rules_file] [output_md_file]")
+    print("     Writes a markdown file with all Falco rule titles, descriptions and tags, except those filtered")
     exit()
 
 def merge_tags_intro(arguments):
@@ -214,6 +254,12 @@ def get_csv_tags_intro(arguments):
     get_csv_tags(arguments[2], arguments[3])
     exit()
 
+
+def get_rules_md_intro(arguments):
+    if (len(arguments)<2+1):
+        show_help()
+    get_rules_md(arguments[2], arguments[3])
+
 def main():
     if len(sys.argv)<=1:
         show_help()
@@ -221,8 +267,12 @@ def main():
     switcher = {
         'merge_tags': merge_tags_intro,
         'get_csv_tags': get_csv_tags_intro,
+        'get_rules_md': get_rules_md_intro,
         'help': show_help
     }
+    if sys.argv[1] not in switcher:
+        show_help()
+ 
     func= switcher.get(sys.argv[1], lambda: show_help([]) )
     return func(sys.argv)
 
