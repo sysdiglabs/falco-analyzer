@@ -140,15 +140,15 @@ def read_rules_from_file(input_falco_rules_file):
     return rules
 
 def get_tags_from_prefix(tags, prefix):
-    separator = ", "
-    result = separator
+    tags_separator = ", "
+    result = tags_separator
     for tag in tags:
-        if str.startswith(tag, prefix) and tag != prefix:
+        if str.startswith(tag.lower(), prefix.lower()) and tag.lower() != prefix.lower():
             # print("Found " + prefix + " in " + tag)
-            result = result + tag + separator
+            result = result + tag[len(prefix)+1:len(tag)] + tags_separator
         # else:
             # print("Not found " + prefix + " in " + tag)
-    result = result [len(separator): len(result)- len(separator)]
+    result = result [len(tags_separator): len(result)- len(tags_separator)]
     return result
 
 def starts_with_any(tag, prefixes):
@@ -158,20 +158,28 @@ def starts_with_any(tag, prefixes):
             return True
     return False
 
+def escape_for_csv(str):
+    quote = "\""
+    escaped_quote ="\\\""
+    result = str.replace(quote, escaped_quote)
+    result = str.replace("\r\n", "\\n").replace("\n", "\\n").replace("\r", "\\n")
+    while result.endswith("\\n"):
+        result = result[:len(result)-2]
+    return quote + result + quote
+
 def get_csv_tags(input_falco_rules_file, output_csv_file):
     
     rules = read_rules_from_file(input_falco_rules_file)
     print("Rules found: ", len(rules))
     
-    separator = ","
-    quote = "\""
+    separator = ";"
     eol = "\n"
-
     i=1
     filename=os.path.basename(input_falco_rules_file)
-    prefixes = ["source=", "PCI", "NIST_800-190", "NIST_800-53", "mitre", "SOC2"]
-    fields = prefixes + ["rule", "file", "position"]
-    
+    tag_prefixes = ["PCI_DSS", "NIST_800-190", "NIST_800-53", "mitre", "SOC2", "CIS", "fsbp_aws", "source", "aws"]
+    attributes = ["rule", "priority", "desc", "condition"]
+    fields = ["file", "order"] + tag_prefixes + attributes
+
     header = ""
     for field in fields:
         header += separator + field
@@ -180,13 +188,22 @@ def get_csv_tags(input_falco_rules_file, output_csv_file):
     with open(output_csv_file, "w") as stream:
         stream.write(header + eol)
         for item in rules:
-            if not 'tags' in item:
-                continue
-            line = ""
-            for prefix in prefixes:
-                tags = get_tags_from_prefix(item['tags'], prefix)
-                line += quote + tags + quote + separator
-            line += quote + item['rule'] + quote + separator + filename + separator + str(i) + eol
+            line = escape_for_csv(filename) + separator
+            line += escape_for_csv(str(i)) + separator
+
+            for prefix in tag_prefixes:
+                tags = ""
+                if 'tags' in item:
+                    tags = get_tags_from_prefix(item['tags'], prefix)
+                line += escape_for_csv(tags) + separator
+
+            for attribute in attributes:
+                attr_str = ""
+                if attribute in item:
+                    attr_str = item[attribute]
+                line += escape_for_csv(attr_str) + separator
+
+            line += eol
             # print(line)
             stream.write(line)
             i=i+1
