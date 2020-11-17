@@ -241,6 +241,41 @@ def get_rules_md(input_falco_rules_file, output_md_file):
 
         stream.close()
 
+def get_rules_enablement(input_falco_rules_file, output_md_file):
+    rules = read_rules_from_file(input_falco_rules_file)
+
+    eol = "\n"
+    title_prefix= "- rule: "
+    desc_prefix="# "
+    tags_prefix="# Tags: "
+    avoid_tag_starts = ["PCI", "NIST_800-190", "NIST_800-53", "SOC2", "aws_cis", "pci_dss_"]
+    tag_separator=", "
+
+    with open(output_md_file, "w") as stream:
+        stream.write("# Sysdig Cloud Connector: all Falco rules activations" + eol + eol) 
+        for item in rules:
+            line = ""
+            if not 'rule' in item:
+                continue
+            if 'desc' in item:
+                line += desc_prefix + item['desc'] + eol
+
+
+            if 'tags' in item:
+                tags_line=""
+                for tag in item['tags']:
+                    if not starts_with_any(tag, avoid_tag_starts):
+                        tags_line += tag_separator + tag 
+                if tags_line != "":
+                    tags_line = tags_line[len(tag_separator):]
+                    line += tags_prefix + tags_line + eol
+
+            line += title_prefix + item['rule'] + eol
+            line += "  append: true" + eol
+            line += "  enabled: true" + eol + eol
+            stream.write(line)
+
+        stream.close()
 
 def show_help(arguments=[]):
     print("Usage:")

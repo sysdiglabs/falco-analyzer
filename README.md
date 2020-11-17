@@ -4,44 +4,43 @@ This script has utilities to help analyze and extract information from Falco rul
 
 ## Requirements
 
-You need [Python 3.7+](https://www.python.org/). It is recommended to use [pipenv](https://github.com/pypa/pipenv) to install Python dependences and a [virtual environment](https://github.com/pypa/pipenv#-usage)
+You need [Python 3.7+](https://www.python.org/), and [Poetry](https://python-poetry.org/docs/#installation) to install dependencies and create a virtual environment.
 
 ```console
 $ python --version
 Python 3.7.8
 
-$ pipenv --version
-pipenv, version 2020.6.2
+$ poetry -V
+Poetry version 1.1.4
 ```
 
 ## Set up
 
-Clone this repository, and use `pipenv` inside it to create a virtual environment.
+Clone this repository, and use `Poetry` inside it to install dependencies in an automatically created virtual environment.
 
 ```console
 $ git clone https://github.com/sysdiglabs/falco_analyzer.git
 $ cd falco_analyzer
-$ pipenv shell
+$ poetry install
 ```
 
-To install all dependences, then use:
+Then you can execute this script with:
 ```console
-$ pipenv install
+$ poetry run python3 falco_analyzer.py help
 ```
 
-Then you can start executing the script like this:
-```console
-$ python3 falco_analyzer.py help
-```
+### Virtual environment and Poetry
+
+The default poetry behaviour is to create a virtual environment in `{cache-dir}/virtualenvs`. You can run commands using that environment with `poetry run ...` or activate it with `poetry shell`. For more information, check [Poetry official documentation](https://python-poetry.org/docs/basic-usage/).
 
 
 ## Usage
 
 ```
-python3 falco_analyzer.py [command] [parameters]
+poetry run python3 falco_analyzer.py [command] [parameters]
 
 Example:
-python3 falco_analyzer.py merge_tags rule_file.yaml tag_file.yaml output_file.yaml
+poetry run python3 falco_analyzer.py merge_tags rule_file.yaml tag_file.yaml output_file.yaml
 
 Commands
 

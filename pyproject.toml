@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "falco-analyzer"
+version = "0.1.0"
+description = "CLI tool to analyze Falco rule files"
+authors = ["Sysdig Inc. <info@sysdig.com>"]
+maintainers = [
+    "Vicente Herrera <vicente.herrera@sysdig.com>"
+]
+documentation = "https://github.com/sysdiglabs/falco-analyzer"
+
+[tool.poetry.dependencies]
+python = "^3.7"
+"ruamel.yaml" = "^0.16.12"
+
+[tool.poetry.dev-dependencies]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
